@@ -9,9 +9,9 @@
 ### MELPA
 
 If you're an Emacs 24 user or you have a recent version of
-`package.el` you can install `mode-line-bell-mode` from the
+`package.el` you can install `mode-line-bell` from the
 [MELPA](http://melpa.org) repository. The version of
-`mode-line-bell-mode` there will always be up-to-date.
+`mode-line-bell` there will always be up-to-date.
 
 Enable `mode-line-bell-mode` with `M-x mode-line-bell-mode`, by using
 the customisation interface, or by adding code such as the following
