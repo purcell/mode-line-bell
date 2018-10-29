@@ -29,6 +29,9 @@
 (defvar mode-line-bell-flashing nil
   "If non-nil, the mode line is currently flashing.")
 
+(defvar mode-line-bell-flash-time 0.05
+  "Length of time to flash the mode line when the bell is rung.")
+
 (defun mode-line-bell-begin-flash ()
   "Begin flashing the mode line."
   (unless mode-line-bell-flashing
@@ -45,7 +48,7 @@
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
   (unless mode-line-bell-flashing
-    (run-with-timer 0.05 nil 'mode-line-bell-end-flash)
+    (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell-end-flash)
     (mode-line-bell-begin-flash)))
 
 ;;;###autoload
