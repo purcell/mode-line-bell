@@ -26,12 +26,27 @@
 
 ;;; Code:
 
+(defvar mode-line-bell-flashing nil
+  "If non-nil, the mode line is currently flashing.")
+
+(defun mode-line-bell-begin-flash ()
+  "Begin flashing the mode line."
+  (unless mode-line-bell-flashing
+    (invert-face 'mode-line)
+    (setq mode-line-bell-flashing t)))
+
+(defun mode-line-bell-end-flash ()
+  "Finish flashing the mode line."
+  (when mode-line-bell-flashing
+    (invert-face 'mode-line)
+    (setq mode-line-bell-flashing nil)))
+
 ;;;###autoload
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
-  (invert-face 'mode-line)
-  (run-with-timer 0.05 nil 'invert-face 'mode-line))
-
+  (unless mode-line-bell-flashing
+    (run-with-timer 0.05 nil 'mode-line-bell-end-flash)
+    (mode-line-bell-begin-flash)))
 
 ;;;###autoload
 (define-minor-mode mode-line-bell-mode
