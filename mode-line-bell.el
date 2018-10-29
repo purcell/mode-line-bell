@@ -26,11 +26,17 @@
 
 ;;; Code:
 
+(defgroup mode-line-bell nil
+  "Flash the mode line instead of ringing the bell."
+  :group 'frames)
+
+(defcustom mode-line-bell-flash-time 0.05
+  "Length of time to flash the mode line when the bell is rung."
+  :type 'float
+  :safe 'floatp)
+
 (defvar mode-line-bell-flashing nil
   "If non-nil, the mode line is currently flashing.")
-
-(defvar mode-line-bell-flash-time 0.05
-  "Length of time to flash the mode line when the bell is rung.")
 
 (defun mode-line-bell-begin-flash ()
   "Begin flashing the mode line."
