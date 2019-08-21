@@ -17,7 +17,7 @@ Enable `mode-line-bell-mode` with `M-x mode-line-bell-mode`, by using
 the customisation interface, or by adding code such as the following
 to your emacs startup file:
 
-``` lisp
+```elisp
 (mode-line-bell-mode)
 ```
 
@@ -26,7 +26,7 @@ to your emacs startup file:
 Ensure `mode-line-bell.el` is in a directory on your load-path, and
 add the following to your `~/.emacs` or `~/.emacs.d/init.el`:
 
-``` lisp
+```elisp
 (require 'mode-line-bell)
 (mode-line-bell-mode)
 ```
