@@ -4,6 +4,9 @@
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: convenience
+;; URL: https://github.com/purcell/mode-line-bell
+;; Package-Version: 0.2
+;; Package-Requires: ((emacs "26.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
