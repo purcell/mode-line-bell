@@ -38,17 +38,36 @@
 (defvar mode-line-bell--flashing nil
   "If non-nil, the mode line is currently flashing.")
 
+(defvar mode-line-bell--inverted nil
+  "Whether the mode-line-bell face has been inverted.")
+
+(defface mode-line-bell '((t :inherit mode-line
+                             :inverse-video t))
+  "The mode-line face during `mode-line-bell-flash'.")
+
+(defun mode-line-bell--remap ()
+  "Remap the mode-line face to mode-line-bell."
+  (add-to-list 'face-remapping-alist '(mode-line . mode-line-bell)))
+
+(defun mode-line-bell--unremap ()
+  "Reset the mode-line to the original face."
+  (setq  face-remapping-alist
+         (assoc-delete-all 'mode-line face-remapping-alist))
+  (force-mode-line-update t))
+
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
   (unless mode-line-bell--flashing
-    (invert-face 'mode-line)
-    (setq mode-line-bell--flashing t)))
+    (mode-line-bell--remap)
+    (setq mode-line-bell--flashing t))
+  (force-mode-line-update))
 
 (defun mode-line-bell--end-flash ()
   "Finish flashing the mode line."
   (when mode-line-bell--flashing
-    (invert-face 'mode-line)
-    (setq mode-line-bell--flashing nil)))
+    (mode-line-bell--unremap)
+    (setq mode-line-bell--flashing nil))
+  (force-mode-line-update))
 
 ;;;###autoload
 (defun mode-line-bell-flash ()
@@ -63,7 +82,12 @@
   :lighter nil
   :global t
   (setq-default ring-bell-function (when mode-line-bell-mode
-                                     'mode-line-bell-flash)))
+                                     'mode-line-bell-flash))
+  (if mode-line-bell-mode
+      (add-function :after after-focus-change-function
+                    #'mode-line-bell--unremap)
+    (remove-function after-focus-change-function
+                     #'mode-line-bell--unremap)))
 
 
 (provide 'mode-line-bell)
