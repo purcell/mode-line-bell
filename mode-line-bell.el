@@ -52,7 +52,7 @@
 
 (defun mode-line-bell--init (&rest _)
   "Initialize `mode-line-orig' for when the bell rings."
-  (copy-face 'mode-line 'mode-line-orig))
+  (copy-face 'mode-line 'mode-line-orig (selected-frame)))
 
 (defun mode-line-bell--remap ()
   "Remap the mode-line face to mode-line-bell."
@@ -90,10 +90,10 @@
   (if mode-line-bell-mode
       (progn (advice-add #'load-theme :after #'mode-line-bell--init)
               (add-function :after after-focus-change-function
-                            #'mode-line-bell--unremap))
+                            #'mode-line-bell--init))
     (advice-remove #'load-theme #'mode-line-bell--init)
     (remove-function after-focus-change-function
-                     #'mode-line-bell--unremap)))
+                     #'mode-line-bell--init)))
 
 (provide 'mode-line-bell)
 ;;; mode-line-bell.el ends here
