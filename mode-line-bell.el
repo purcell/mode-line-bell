@@ -50,36 +50,35 @@
                              :inverse-video t))
   "The mode-line face during `mode-line-bell-flash'.")
 
+(defun mode-line-bell--init (&rest _)
+  "Initialize `mode-line-orig' for when the bell rings."
+  (copy-face 'mode-line 'mode-line-orig))
+
 (defun mode-line-bell--remap ()
   "Remap the mode-line face to mode-line-bell."
-  (add-to-list 'face-remapping-alist '(mode-line . mode-line-bell)))
+  (copy-face 'mode-line-bell 'mode-line)
+  (force-mode-line-update))
 
 (defun mode-line-bell--unremap ()
   "Reset the mode-line to the original face."
-  (setq  face-remapping-alist
-         (assoc-delete-all 'mode-line face-remapping-alist))
-  (force-mode-line-update t))
+  (copy-face 'mode-line-orig 'mode-line)
+  (force-mode-line-update))
 
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
-  (unless mode-line-bell--flashing
-    (mode-line-bell--remap)
-    (setq mode-line-bell--flashing t))
+  (mode-line-bell--remap)
   (force-mode-line-update))
 
 (defun mode-line-bell--end-flash ()
   "Finish flashing the mode line."
-  (when mode-line-bell--flashing
-    (mode-line-bell--unremap)
-    (setq mode-line-bell--flashing nil))
+  (mode-line-bell--unremap)
   (force-mode-line-update))
 
 ;;;###autoload
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
-  (unless mode-line-bell--flashing
-    (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash)
-    (mode-line-bell--begin-flash)))
+  (mode-line-bell--begin-flash)
+  (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash))
 
 ;;;###autoload
 (define-minor-mode mode-line-bell-mode
@@ -87,13 +86,14 @@
   :lighter nil
   :global t
   (setq-default ring-bell-function (when mode-line-bell-mode
-                                     'mode-line-bell-flash))
+                                     #'mode-line-bell-flash))
   (if mode-line-bell-mode
-      (add-function :after after-focus-change-function
-                    #'mode-line-bell--unremap)
+      (progn (advice-add #'load-theme :after #'mode-line-bell--init)
+              (add-function :after after-focus-change-function
+                            #'mode-line-bell--unremap))
+    (advice-remove #'load-theme #'mode-line-bell--init)
     (remove-function after-focus-change-function
                      #'mode-line-bell--unremap)))
-
 
 (provide 'mode-line-bell)
 ;;; mode-line-bell.el ends here
