@@ -1,10 +1,12 @@
 ;;; mode-line-bell.el --- Flash the mode line instead of ringing the bell  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2021  Case Duckworth
 ;; Copyright (C) 2018  Steve Purcell
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
+;; Author: Case Duckworth <acdw@acdw.net>
 ;; Keywords: convenience
-;; URL: https://github.com/purcell/mode-line-bell
+;; URL: https://github.com/duckwork/mode-line-bell
 ;; Package-Version: 0.2
 ;; Package-Requires: ((emacs "26.2"))
 
