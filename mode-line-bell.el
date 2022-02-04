@@ -50,9 +50,13 @@
                              :inverse-video t))
   "The mode-line face during `mode-line-bell-flash'.")
 
-(defun mode-line-bell--init (&rest _)
+(defface mode-line-bell-orig nil
+  "The original mode-line face.")
+
+(defun mode-line-bell--init (&optional frame &rest _)
   "Initialize `mode-line-orig' for when the bell rings."
-  (copy-face 'mode-line 'mode-line-orig (selected-frame)))
+  (let ((frame (if (framep frame) frame (selected-frame))))
+    (copy-face 'mode-line 'mode-line-orig frame)))
 
 (defun mode-line-bell--remap ()
   "Remap the mode-line face to mode-line-bell."
@@ -88,12 +92,15 @@
   (setq-default ring-bell-function (when mode-line-bell-mode
                                      #'mode-line-bell-flash))
   (if mode-line-bell-mode
-      (progn (advice-add #'load-theme :after #'mode-line-bell--init)
-              (add-function :after after-focus-change-function
-                            #'mode-line-bell--init))
+      (progn (mode-line-bell--init)
+             (advice-add #'load-theme :after #'mode-line-bell--init)
+             (add-hook 'after-make-frame-functions #'mode-line-bell--init)
+             (add-function :after after-focus-change-function
+                           #'mode-line-bell--unremap))
     (advice-remove #'load-theme #'mode-line-bell--init)
+    (remove-hook 'after-make-frame-functions #'mode-line-bell--init)
     (remove-function after-focus-change-function
-                     #'mode-line-bell--init)))
+                     #'mode-line-bell--unremap)))
 
 (provide 'mode-line-bell)
 ;;; mode-line-bell.el ends here
