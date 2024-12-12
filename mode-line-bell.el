@@ -1,9 +1,14 @@
 ;;; mode-line-bell.el --- Flash the mode line instead of ringing the bell  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2021  Case Duckworth
 ;; Copyright (C) 2018  Steve Purcell
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
+;; Author: Case Duckworth <acdw@acdw.net>
 ;; Keywords: convenience
+;; URL: https://github.com/duckwork/mode-line-bell
+;; Package-Version: 0.2
+;; Package-Requires: ((emacs "26.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -38,24 +43,46 @@
 (defvar mode-line-bell--flashing nil
   "If non-nil, the mode line is currently flashing.")
 
+(defvar mode-line-bell--inverted nil
+  "Whether the mode-line-bell face has been inverted.")
+
+(defface mode-line-bell '((t :inherit mode-line
+                             :inverse-video t))
+  "The mode-line face during `mode-line-bell-flash'.")
+
+(defface mode-line-bell-orig nil
+  "The original mode-line face.")
+
+(defun mode-line-bell--init (&optional frame &rest _)
+  "Initialize `mode-line-orig' for when the bell rings."
+  (let ((frame (if (framep frame) frame (selected-frame))))
+    (copy-face 'mode-line 'mode-line-orig frame)))
+
+(defun mode-line-bell--remap ()
+  "Remap the mode-line face to mode-line-bell."
+  (copy-face 'mode-line-bell 'mode-line)
+  (force-mode-line-update))
+
+(defun mode-line-bell--unremap ()
+  "Reset the mode-line to the original face."
+  (copy-face 'mode-line-orig 'mode-line)
+  (force-mode-line-update))
+
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
-  (unless mode-line-bell--flashing
-    (invert-face 'mode-line)
-    (setq mode-line-bell--flashing t)))
+  (mode-line-bell--remap)
+  (force-mode-line-update))
 
 (defun mode-line-bell--end-flash ()
   "Finish flashing the mode line."
-  (when mode-line-bell--flashing
-    (invert-face 'mode-line)
-    (setq mode-line-bell--flashing nil)))
+  (mode-line-bell--unremap)
+  (force-mode-line-update))
 
 ;;;###autoload
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
-  (unless mode-line-bell--flashing
-    (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash)
-    (mode-line-bell--begin-flash)))
+  (mode-line-bell--begin-flash)
+  (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash))
 
 ;;;###autoload
 (define-minor-mode mode-line-bell-mode
@@ -63,8 +90,17 @@
   :lighter nil
   :global t
   (setq-default ring-bell-function (when mode-line-bell-mode
-                                     'mode-line-bell-flash)))
-
+                                     #'mode-line-bell-flash))
+  (if mode-line-bell-mode
+      (progn (mode-line-bell--init)
+             (advice-add #'load-theme :after #'mode-line-bell--init)
+             (add-hook 'after-make-frame-functions #'mode-line-bell--init)
+             (add-function :after after-focus-change-function
+                           #'mode-line-bell--unremap))
+    (advice-remove #'load-theme #'mode-line-bell--init)
+    (remove-hook 'after-make-frame-functions #'mode-line-bell--init)
+    (remove-function after-focus-change-function
+                     #'mode-line-bell--unremap)))
 
 (provide 'mode-line-bell)
 ;;; mode-line-bell.el ends here
