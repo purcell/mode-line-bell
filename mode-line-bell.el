@@ -38,23 +38,30 @@
 (defvar mode-line-bell--flashing nil
   "If non-nil, the mode line is currently flashing.")
 
-(defconst mode-line-bell--mode-line-face
+(defconst mode-line-bell--face
   (if (facep 'mode-line-active) 'mode-line-active 'mode-line)
-  "Face to invert while flashing.
+  "Face whose `:inverse-video' attribute is toggled while flashing.
 
 Since Emacs 29, the selected window's mode line is drawn with
 `mode-line-active' rather than `mode-line'.")
 
+(defvar mode-line-bell--saved-inverse-video nil
+  "Saved value of `:inverse-video' attribute of `mode-line-bell--face'.")
+
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
   (unless mode-line-bell--flashing
-    (invert-face mode-line-bell--mode-line-face)
+    (setq mode-line-bell--saved-inverse-video
+          (face-attribute mode-line-bell--face :inverse-video))
+    ;; Flip the effective (possibly inherited) value.
+    (set-face-attribute mode-line-bell--face nil
+                        :inverse-video (not (face-attribute mode-line-bell--face :inverse-video nil 'default)))
     (setq mode-line-bell--flashing t)))
 
 (defun mode-line-bell--end-flash ()
   "Finish flashing the mode line."
   (when mode-line-bell--flashing
-    (invert-face mode-line-bell--mode-line-face)
+    (set-face-attribute mode-line-bell--face nil :inverse-video mode-line-bell--saved-inverse-video)
     (setq mode-line-bell--flashing nil)))
 
 ;;;###autoload
