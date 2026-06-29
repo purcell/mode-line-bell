@@ -38,16 +38,23 @@
 (defvar mode-line-bell--flashing nil
   "If non-nil, the mode line is currently flashing.")
 
+(defconst mode-line-bell--mode-line-face
+  (if (facep 'mode-line-active) 'mode-line-active 'mode-line)
+  "Face to invert while flashing.
+
+Since Emacs 29, the selected window's mode line is drawn with
+`mode-line-active' rather than `mode-line'.")
+
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
   (unless mode-line-bell--flashing
-    (invert-face 'mode-line)
+    (invert-face mode-line-bell--mode-line-face)
     (setq mode-line-bell--flashing t)))
 
 (defun mode-line-bell--end-flash ()
   "Finish flashing the mode line."
   (when mode-line-bell--flashing
-    (invert-face 'mode-line)
+    (invert-face mode-line-bell--mode-line-face)
     (setq mode-line-bell--flashing nil)))
 
 ;;;###autoload
