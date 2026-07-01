@@ -1,6 +1,6 @@
 ;;; mode-line-bell.el --- Flash the mode line instead of ringing the bell  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Steve Purcell
+;; Copyright (C) 2018, 2026  Steve Purcell
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: convenience
@@ -38,24 +38,35 @@
 (defvar mode-line-bell--flashing nil
   "If non-nil, the mode line is currently flashing.")
 
+(defconst mode-line-bell--face
+  (if (facep 'mode-line-active) 'mode-line-active 'mode-line)
+  "Face whose `:inverse-video' attribute is toggled while flashing.
+
+Since Emacs 29, the selected window's mode line is drawn with
+`mode-line-active' rather than `mode-line'.")
+
 (defun mode-line-bell--begin-flash ()
   "Begin flashing the mode line."
   (unless mode-line-bell--flashing
-    (invert-face 'mode-line)
+    (set-face-attribute mode-line-bell--face nil :inverse-video
+                        (not (face-attribute mode-line-bell--face :inverse-video nil 'default)))
     (setq mode-line-bell--flashing t)))
 
-(defun mode-line-bell--end-flash ()
-  "Finish flashing the mode line."
+(defun mode-line-bell--end-flash (inverse-video)
+  "Finish flashing the mode line.
+INVERSE-VIDEO is the original state of the :inverse-video attribute on
+`mode-line-bell--face'."
   (when mode-line-bell--flashing
-    (invert-face 'mode-line)
+    (set-face-attribute mode-line-bell--face nil :inverse-video inverse-video)
     (setq mode-line-bell--flashing nil)))
 
 ;;;###autoload
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
   (unless mode-line-bell--flashing
-    (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash)
-    (mode-line-bell--begin-flash)))
+    (let ((saved-inverse-video (face-attribute mode-line-bell--face :inverse-video)))
+      (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash saved-inverse-video)
+      (mode-line-bell--begin-flash))))
 
 ;;;###autoload
 (define-minor-mode mode-line-bell-mode
