@@ -52,20 +52,20 @@ Since Emacs 29, the selected window's mode line is drawn with
                         (not (face-attribute mode-line-bell--face :inverse-video nil 'default)))
     (setq mode-line-bell--flashing t)))
 
-(defun mode-line-bell--end-flash (inverse-video)
+(defun mode-line-bell--end-flash (original-inverse-video)
   "Finish flashing the mode line.
-INVERSE-VIDEO is the original state of the :inverse-video attribute on
-`mode-line-bell--face'."
+ORIGINAL-INVERSE-VIDEO is the original state of the :inverse-video
+attribute on `mode-line-bell--face'."
   (when mode-line-bell--flashing
-    (set-face-attribute mode-line-bell--face nil :inverse-video inverse-video)
+    (set-face-attribute mode-line-bell--face nil :inverse-video original-inverse-video)
     (setq mode-line-bell--flashing nil)))
 
 ;;;###autoload
 (defun mode-line-bell-flash ()
   "Flash the mode line momentarily."
   (unless mode-line-bell--flashing
-    (let ((saved-inverse-video (face-attribute mode-line-bell--face :inverse-video)))
-      (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash saved-inverse-video)
+    (let ((original-inverse-video (face-attribute mode-line-bell--face :inverse-video)))
+      (run-with-timer mode-line-bell-flash-time nil 'mode-line-bell--end-flash original-inverse-video)
       (mode-line-bell--begin-flash))))
 
 ;;;###autoload
